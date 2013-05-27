@@ -9,7 +9,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import optparser
+import argparse
 import os
 
 import sources
@@ -27,9 +27,10 @@ def find_similar_binary_by_name (package_name, lang=None):
     else:
         return
 
+def setup_args ():
+    parser = argparse.ArgumentParser (description="Download similar python packages for vict.ims")
 
-def find_similar_binary_by_code (package, lang=None):
-    return
+
 
 def main ():
 
