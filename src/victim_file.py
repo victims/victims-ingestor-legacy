@@ -20,7 +20,7 @@ https://pypi.python.org/packages/source/<first-letter-of-package-name>/<package-
 
 '''
 
-def _download_file (url):
+def  download_file (url):
     ''' 
     function to try and download the file in the given url
     '''
@@ -58,7 +58,7 @@ def _get_package (package_name, package_version, lang):
     '''
 
     url = _make_package_url (package_name, package_version, lang)
-    victim_file = _download_file (url)
+    victim_file = download_file (url)
 
     return victim_file
 
