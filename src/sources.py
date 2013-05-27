@@ -11,22 +11,16 @@
 
 import urllib2
 
-import xml.parsers.expat
+import nist_nvd_v2
 
 # TODO - cache the results after a run, it currently takes ages for a single run
 # - Implement threading in the library to make runs faster
 # - May be use CVE v1 files as these are much smaller? (Are they good enough?)
 
-# Language specific CVE databases
-lang_cve = {"ruby" : ["<path-to-ruby>"]}
+sources = [nist_nvd_v2.get_entries]
 
-# Language agnostic databases
-cve_static = {"nvd" : ["http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-modified.xml", "http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-recent.xml"]}
-cve_dynamic = {"nvd" : {"nist_date" : "http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-{!s}.xml"}}
+DEBUG_MODE = True # Is debug mode on?
 
-cve = ""          # The current CVE ID/s being parsed
-valid = False     # Is the entry currently being processed something we want? a global because the value's needed by two functions
-vuln_list = {}    # The list of valid vulnerable entries currently parsed
 
 def get_entries (lang=None):
     '''
@@ -35,122 +29,9 @@ def get_entries (lang=None):
     lang are also parsed and added on to the list of vulnerable packages
     '''
 
-    output = []
+    vuln_list = {}
 
-    for src in cve_static["nvd"]:
-        source = _get_source (src)
-        if source is not None:
-            continue
-        else:
-            output.append (_parse_nvd_file (source))
-    
-    for src_type in cve_dynamic:
+    for src in sources:
+        src (vuln_list)
 
-        for src_cve in cve_dynamic[src]:
-
-            for year in range (2000, 2014):
-                url = cve_dynamic[src][src_cve].format (year)
-                source = _get_source (url)
-                if source is not None:
-                    continue
-                else:
-                    output.append (_parse_nvd_file (source))
-
-    if lang is not None:
-        # This part will be implemented to handle when something is specified for lang
-        return output
-
-    return output
-
-
-def _get_source (url):
-    '''
-    Function that tries to download a file from the given url
-    '''
-
-    try:
-        ret = urllib2.urlopen (url)
-    except urllib2.HTTPError as h:
-        print h.reason
-        return None
-    except urllib2.URLError as u:
-        print u.reason
-        return None
-
-    print "Downloaded " + url    # Just for debugging, have we really downloaded the file?
-
-    return ret
-
-
-# Maybe break the next bit in to another library?
-def _parse_helper_nvd (name, attr):
-    '''
-    Function that checks if data currently being processed is what we're looking for
-    '''
-    global valid
-    global cve
-
-    if name == "entry":
-        cve = attr["id"]
-
-    if name == "vuln:product":
-        valid = True
-    else:
-        valid = False
-
-
-def _validate_data (entry):
-    '''
-    Function to parse a given line of data from the nvd file to grab the information we need
-    '''
-
-    cve_package = ""
-    cve_package_version = ""
-    vendor = ""
-
-    # It seems like the data we would need is contained after the 2nd element
-    # in the list, this may need further verification
-    # format seems to be "cpe:\a:<vendor>:<name>:version-info(following)"
-    conf_list = entry.split (":")
-    if len (conf_list) >= 4:
-        vendor = conf_list[2]
-        cve_package = conf_list[3]
-        for elem in conf_list[4:]:
-            cve_package_version = cve_package_version + elem  # Append all the version information together      
-
-    return (cve_package, cve_package_version, vendor, cve)
-
-
-def _parse_data_nvd (data):
-    '''
-    Function that determines if the data passed by the XML parser is what we need, if so
-    it is added to the vulnerabilities dictionary
-    '''
-
-    global valid
-    global vuln_list
-
-    if valid:
-        cve_entry = _validate_data (data)
-
-        if len (cve_entry[0]) and len (cve_entry[1]):
-            #print cve_entry
-
-            # If the dictionary already contains a list for the given package name, just append the new cve entry to the list
-            if len (vuln_list[cve_entry[0]]):
-                vuln_list[cve_entry[0]].append (cve_entry)
-            else:
-                # Create a new list for the package name if a list does not exist
-                vuln_list[cve_entry[0]] = [cve_entry]
-
-        valid = False
-
-
-def _parse_nvd_file (input_file):
-    '''
-    Function to parse the data in the nvd file to find the appropriate cve entries and the program name and version
-    '''
-    nvd_parser = xml.parsers.expat.ParserCreate ()
-    nvd_parser.StartElementHandler = _parse_helper_nvd
-    nvd_parser.CharacterDataHandler = _parse_data_nvd
-    nvd_parser.ParseFile (input_file)
+    return vuln_list
