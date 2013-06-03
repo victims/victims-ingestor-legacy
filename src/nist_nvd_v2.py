@@ -16,50 +16,53 @@ import xml.parsers.expat
 from victim_file import download_file
 
 # TODO - cache the results after a run, it currently takes ages for a single run
-# - Implement threading in the library to make runs faster
-# - May be use CVE v1 files as these are much smaller? (Are they good enough?)
 
-# Language agnostic databases
-cve_sources_recent = ["http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-modified.xml", "http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-recent.xml"]
+# NIST database files
+cve_sources_recent = ["https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-modified.xml",
+                      "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-recent.xml"]
 
-cve_sources_full = ["http://static.nvd.nist.gov/feeds/xml/cve/nvdcve-2.0-2003.xml"]
+cve_sources_full = ["https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2002.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2003.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2004.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2005.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2006.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2007.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2008.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2009.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2010.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2011.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2012.xml",
+                    "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2013.xml",]
 
 cve = ""          # The current CVE ID/s being parsed
 valid = False     # Is the entry currently being processed something we want? a global because the value's needed by two functions
 vuln_list = None    # The dictionary of valid vulnerable entries currently parsed
 
-DEBUG_MODE = True # Is debug mode on?
+DEBUG_MODE = False # Is debug mode on?
 
 
 def get_entries (output_dict):
     '''
-    Function parses and aggregates _all_ vulnerability information from the predefind sources,
-    if lang is specified then the information from vulnerability databases for that particular
-    lang are also parsed and added on to the list of vulnerable packages
+    Function parses and aggregates _all_ vulnerability information from the predefind sources
     '''
     global vuln_list
 
     vuln_list = output_dict
 
-    for src in cve_sources_full["nvd"]:
-        source = _get_source (src)
+    for src in cve_sources_recent:
+        source = _get_source (src)   # Change over to victim file's download function
         if source is None:
             continue
         else:
             _parse_nvd_file (source)
     
     if not DEBUG_MODE: 
-        for src_type in cve_dynamic:
-
-            for src_cve in cve_dynamic[src]:
-
-                for year in range (2000, 2014):
-                    url = cve_dynamic[src][src_cve].format (year)
-                source = _get_source (url)
-                if source is None:
-                    continue
-                else:
-                    _parse_nvd_file (source)
+        for src in cve_sources_full:
+            source = _get_source (src)
+            if source is None:
+                continue
+            else:
+                _parse_nvd_file (source)
 
     return vuln_list
 
