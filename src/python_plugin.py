@@ -14,18 +14,21 @@ import os
 
 import sources
 import victim_file
-import victim_db_file
+import victim_db_manager
 
-def find_similar_binary_by_name (package_name, lang=None):
-    entries = sources.get_entries (lang)
+def find_similar_binary_by_name (package_name):
+    entries = sources.get_entries ()
 
-    if len (entries[package_name]):
+    if package_name in entries:
         # do stuff
         for vuln_package in entries[pack_name]:
-            victim_file.VictimsFile (vuln_package[0], vuln_package[1], vuln_package[2], vuln_package[3])
+            victim_file.package_exists ()
+            # Add entry to database
 
     else:
-        return
+        print "Error : Package not found in sources"
+
+    return
 
 def setup_args ():
     parser = argparse.ArgumentParser (description="Download similar python packages for vict.ims")
@@ -33,8 +36,10 @@ def setup_args ():
 
 
 def main ():
+    setup_args ()
+
+    find_similar_binary_by_name ()
 
 
-
-if __name__ == 'main':
+if __name__ == '__main__':
     main ()
