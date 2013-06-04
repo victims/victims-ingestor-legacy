@@ -119,7 +119,7 @@ def _parse_helper_nvd (name, attr):
             if len (version) == 0:
                 version = attr["edition"].encode ("ascii")
             else:
-                version = version + "-" + attr["edition"].encode ("ascii")
+                version = version + attr["edition"].encode ("ascii")
 
         if version not in vuln_list[p_name]:
             vuln_list[p_name][version] = [cve]
