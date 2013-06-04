@@ -44,7 +44,13 @@ DEBUG_MODE = False # Is debug mode on?
 def get_entries (output_dict):
     '''
     Function parses and aggregates _all_ vulnerability information from the predefind sources
+
+    output is a dictionary of the following format:
+    dict[package_name] - returns a dictionary(dict2) of the format
+    dict2[version] which gives a list of CVEs affecting the given version
+    dict2[vendor] returns the vendor for the given package_name
     '''
+
     global vuln_list
 
     vuln_list = output_dict
@@ -55,8 +61,8 @@ def get_entries (output_dict):
             continue
         else:
             _parse_nvd_file (source)
-    
-    if not DEBUG_MODE: 
+
+    if not DEBUG_MODE: # Currently debug mode makes no real sense, fix it up
         for src in cve_sources_full:
             source = _get_source (src)
             if source is None:
@@ -139,14 +145,19 @@ def _parse_data_nvd (data):
         cve_entry = _validate_data (data)
 
         if len (cve_entry[0]) and len (cve_entry[1]):
-            #print cve_entry
 
             # If the dictionary already contains a list for the given package name, just append the new cve entry to the list
             if cve_entry[0] in vuln_list:
-                vuln_list[cve_entry[0]].append (cve_entry)
+                if cve_entry[1] in vuln_list[cve_entry[0]]:
+                    vuln_list[cve_entry[0]][cve_entry[1]].append (cve_entry[3])
+                else:
+                    vuln_list[cve_entry[0]][cve_entry[1]] = [cve_entry[3]]
+
             else:
                 # Create a new list for the package name if a list does not exist
-                vuln_list[cve_entry[0]] = [cve_entry]
+                vuln_list[cve_entry[0]] = {}
+                vuln_list[cve_entry[0]]["vendor"] = cve_entry[2]
+                vuln_list[cve_entry[0]][cve_entry[1]] = [cve_entry[3]]
 
         valid = False
 
