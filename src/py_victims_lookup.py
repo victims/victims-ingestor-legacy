@@ -35,12 +35,15 @@ def find_similar_binary_by_name (package_name):
 
 def setup_args ():
     parser = argparse.ArgumentParser (description="Download similar python packages for vict.ims")
+
+    # Only add the agrument for the name of the victims package we are looking for
     parser.add_argument ("-n", "--name", nargs=1, required=True, help="Name of the victim package to be searched for")
     return parser.parse_args ()
 
 def main ():
     args = setup_args ()
 
+    # Create a connection to the victims DB with default values
     db_conn = victim_db_manager.VictimHashDB ()
 
     find_similar_binary_by_name (args.name)
