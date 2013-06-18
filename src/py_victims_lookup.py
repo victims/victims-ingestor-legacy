@@ -16,13 +16,16 @@ import sources
 import victim_file
 import victim_db_manager
 
+db_conn = None
+
 def find_similar_binary_by_name (package_name):
     entries = sources.get_entries ()
 
     if package_name in entries:
         # do stuff
-        for vuln_package in entries[pack_name]:
-            victim_file.package_exists ()
+        for vuln_ver in entries[package_name].keys ():
+          if victim_file.package_exists (package_name, vuln_ver, 1):
+              victim_db_manager.add_entry ()
             # Add entry to database
 
     else:
@@ -32,13 +35,15 @@ def find_similar_binary_by_name (package_name):
 
 def setup_args ():
     parser = argparse.ArgumentParser (description="Download similar python packages for vict.ims")
-
-
+    parser.add_argument ("-n", "--name", nargs=1, required=True, help="Name of the victim package to be searched for")
+    return parser.parse_args ()
 
 def main ():
-    setup_args ()
+    args = setup_args ()
 
-    find_similar_binary_by_name ()
+    db_conn = victim_db_manager.VictimHashDB ()
+
+    find_similar_binary_by_name (args.name)
 
 
 if __name__ == '__main__':
