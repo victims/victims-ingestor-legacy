@@ -23,7 +23,8 @@ class VictimHashDB:
 
     def __init__ (self, db_name='victims', host='localhost', port=27017):
 
-        if float (pymongo.__version__) <= 2.3:
+        # If pymongo is version 2.3 or less we need to get a Connection object
+        if float (pymongo.version) <= 2.3:
             client = pymongo.Connection (host, port)
         else:
             client = pymongo.MongoClient (host, port)
