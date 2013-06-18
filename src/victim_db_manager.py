@@ -22,13 +22,23 @@ class VictimHashDB:
     __hash_table = None
 
     def __init__ (self, db_name='victims', host='localhost', port=27017):
-        client = pymongo.MongoClient (host, port)
+
+        if float (pymongo.__version__) <= 2.3:
+            client = pymongo.Connection (host, port)
+        else:
+            client = pymongo.MongoClient (host, port)
+
         db = client[db_name]
 
         self.__hash_table = db['hashes']
 
-    def add_victim_hash (self, cve_list, vendor, package_name, package_version, package_format, hash_id, state='PENDING'):
-        self.__hash_table.insert ({'name' : package_name, 'version' : package_version, 'vendor' : vendor, 'hash' : hash_id})
+    def add_victim (self, cve_list, vendor, package_name, package_version, package_format, state='PENDING'):
+        if self.__hash_table.find ({'name' : package_name, 'version' : package_version}) is not None:
+            return -1
+        else:
+            self.__hash_table.insert ({'name' : package_name, 'version' : package_version, 'vendor' : vendor, 'format' : package_format, 'hash' : hash_id, 'state' : state})
+
+        return 0
 
     def get_victim_entry (self, package_name, package_version):
         return self.__hash_table.findOne ({'name' : package_name, 'version' : package_version})
