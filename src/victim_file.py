@@ -38,7 +38,7 @@ def download_file (url):
 
     return ret
 
-def _make_package_url (package_name, package_version, lang):
+def make_package_url (package_name, package_version, lang):
     '''
     function to generate a url based on the package name, version and language
     '''
@@ -56,7 +56,7 @@ def package_exists (package_name, package_version, lang):
     a function linking the required functions to download a required package
     '''
 
-    url = _make_package_url (package_name, package_version, lang)
+    url = make_package_url (package_name, package_version, lang)
     victim_file = download_file (url)
 
     if victim_file is None:
