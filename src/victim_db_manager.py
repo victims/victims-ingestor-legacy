@@ -14,14 +14,14 @@ Module that provides a class that helps working with the victims hash collection
 
 import pymongo
 
-class VictimHashDB:
+class VictimDB:
     '''
     Class to provide an easy connection to the victims database
     '''
 
     __hash_table = None
 
-    def __init__ (self, db_name='victims', host='localhost', port=27017):
+    def __init__ (self, db_name='victims', host='localhost', port=27017, table='hashes'):
 
         # If pymongo is version 2.3 or less we need to get a Connection object
         if float (pymongo.version) <= 2.3:
@@ -31,7 +31,7 @@ class VictimHashDB:
 
         db = client[db_name]
 
-        self.__hash_table = db['hashes']
+        self.__hash_table = db[table]
 
     def add_victim (self, cve_list, vendor, package_name, package_version, package_format, state='PENDING'):
         if self.__hash_table.find ({'name' : package_name, 'version' : package_version}) is not None:
