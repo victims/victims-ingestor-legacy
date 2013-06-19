@@ -44,7 +44,7 @@ def main ():
     args = setup_args ()
 
     # Create a connection to the victims DB with default values
-    db_conn = victim_db_manager.VictimHashDB ()
+    db_conn = victim_db_manager.VictimDB ()
 
     find_similar_binary_by_name (args.name)
 
