@@ -13,27 +13,41 @@ Module that provides a class that helps working with the victims hash collection
 '''
 
 import pymongo
+import os
 
 class VictimDB:
-    '''
+    """
     Class to provide an easy connection to the victims database
-    '''
+    """
 
     __hash_table = None
 
     def __init__ (self, db_name='victims', host='localhost', port=27017, table='hashes'):
 
-        # If pymongo is version 2.3 or less we need to get a Connection object
-        if float (pymongo.version) <= 2.3:
-            client = pymongo.Connection (host, port)
-        else:
-            client = pymongo.MongoClient (host, port)
+        try:
+            # If pymongo is version 2.3 or less we need to get a Connection object
+            if float (pymongo.version) <= 2.3:
+                client = pymongo.Connection (host, port)
+            else:
+                client = pymongo.MongoClient (host, port)
 
-        db = client[db_name]
+        except ConnectionFailure:
+            raise ConnectionFailure ()
 
-        self.__hash_table = db[table]
+        try:
+            db = client[db_name]
+
+        except InvalidName:
+            raise ConnectionFailure ()
+
+        self.__hash_table = pymongo.collection.Collection (db, table)
+            
 
     def add_victim (self, cve_list, vendor, package_name, package_version, package_format, state='PENDING'):
+        """
+        Adds a potential victim entry to the victims database
+        """
+
         if self.__hash_table.find ({'name' : package_name, 'version' : package_version}) is not None:
             return -1
         else:
@@ -42,7 +56,15 @@ class VictimDB:
         return 0
 
     def get_victim_entry (self, package_name, package_version):
+        """
+        Get a single victim entry that corresponds to the given parameters
+        """
+
         return self.__hash_table.findOne ({'name' : package_name, 'version' : package_version})
 
     def get_victim_entries (self, package_name, package_version):
+        """
+        Get a list of all victim entries that correspond to the given parameters
+        """
+
         return self.__hash_table.find ({'name' : package_name, 'version' : package_version})
