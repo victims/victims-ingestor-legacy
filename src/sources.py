@@ -11,6 +11,7 @@
 
 import urllib2
 
+import nist_nvd_v1
 import nist_nvd_v2
 
 # TODO - cache the results after a run, it currently takes ages for a single run
