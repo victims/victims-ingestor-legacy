@@ -50,7 +50,7 @@ def _cache_uptodate ():
 
     return False
 
-def get_entries (output_dict):
+def get_entries ():
     '''
     Function parses and aggregates _all_ vulnerability information from the predefind sources
 
