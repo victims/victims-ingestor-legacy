@@ -15,18 +15,24 @@ victims hash collection
 
 import pymongo
 import os
+from datetime import datetime, timedelta
+
+mtime_fmt = "%j:%Y:%H:%M:%S"
+day_seconds = 86400
 
 class VictimDB:
     """
     Class to provide an easy connection to the victims database
     """
 
-    __hash_table = None
+    __hash_table = None # Reference to the table in use
+    __hash_table_name = None # Name of the table in use
+    __hash_db = None # Reference to the DB in use
 
     def __init__ (self, db_name='victims',
                   host=os.getenv ("OPENSHIFT_MONGODB_DB_HOST"),
                   port=int (os.getenv ("OPENSHIFT_MONGODB_DB_PORT")),
-                  table='hashes'):
+                  table='submissions'):
 
         try:
             '''
@@ -57,6 +63,12 @@ class VictimDB:
             raise ConnectionFailure ()
 
         self.__hash_table = pymongo.collection.Collection (db, table)
+        if self.__hash_table == None:
+            print "ERROR"
+
+        # Save the table name and DB reference in case the table needs to be renewed
+        self.__hash_table_name = table
+        self.__hash_db = db
 
 
     def add_victim (self, cve_list,
@@ -73,12 +85,15 @@ class VictimDB:
                                     'version' : package_version}) is not None:
             return -1
         else:
-            self.__hash_table.insert ({'name' : package_name,
+            self.__hash_table.insert ({'submitter' :
+                                       {'name' : "victims-ingestor"},
+                                       'name' : package_name,
                                        'version' : package_version,
                                        'vendor' : vendor,
+                                       'cves' : cve_list,
                                        'format' : package_format,
                                        'hash' : hash_id,
-                                       'state' : state})
+                                       'approval' : state})
 
         return 0
 
@@ -88,7 +103,7 @@ class VictimDB:
         corresponds to the given parameters
         """
 
-        return self.__hash_table.findOne ({'name' : package_name, 'version' : package_version})
+        return self.__hash_table.find_one ({'name' : package_name, 'version' : package_version})
 
     def get_victim_entries (self, package_name, package_version):
         """
@@ -97,3 +112,55 @@ class VictimDB:
         """
 
         return self.__hash_table.find ({'name' : package_name, 'version' : package_version})
+
+    def create_cache (self, data):
+
+        for p_name in data.keys ():
+            for p_version in data[p_name].keys ():
+                self.__hash_table.insert ({'name' : p_name,
+                                           'version' : p_version,
+                                           'cves' : data[p_name][p_version],
+                                           'vendor' : data[p_name]['vendor']})
+
+    def get_cache (self):
+        entries = {}
+
+        data = self.__hash_table.find ({'cache_att' : None})
+        for entry in data:
+            if entry['p_name'] not in entries:
+                entries[entry['p_name']] = {}
+                entries[entry['p_name']]['vendor'] = entry['vendor']
+
+            entries[entry['p_name']][entry['p_version']] = entry['cves']
+
+        return entries
+
+    def renew_table (self):
+        """
+        Renew the table in use by recreating it from scratch
+        """
+        self.__hash_table.drop ()
+        self.__hash_table = pymongo.collection.Collection (self.__hash_db,
+                                                           self.__hash_table_name)
+
+    def add_mtime_stamp (self):
+        """
+        Check if the cache is up to date
+        """
+    #Insert a new modified timestamp in to the cache collection
+        mtimestr = datetime.strftime (datetime.utcnow (), mtime_fmt)
+        self.__hash_table.insert ({'cache_att' : True, 'mtime' : mtimestr})
+
+    def check_mtime_within (self, d_seconds=day_seconds):
+        """
+        Check if the cache is up to date
+        """
+
+        if self.__hash_table.find_one ({'cache_att' : True}):
+            mtimestr = self.__hash_table.find_one ({'cache_att' : True})['mtime']
+            mtime = datetime.strptime (mtimestr, mtime_fmt)
+
+            if mtime >= (datetime.utcnow () - timedelta (seconds=d_seconds)):
+                return True
+
+        return False
