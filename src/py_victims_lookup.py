@@ -25,7 +25,12 @@ def find_similar_binary_by_name (package_name):
         # do stuff
         for vuln_ver in entries[package_name].keys ():
           if victim_file.package_exists (package_name, vuln_ver, 1):
-              victim_db_manager.add_entry ()
+              victim_db_manager.add_entry (package_name,
+                                           vuln_ver,
+                                           entries[package_name]['vendor'],
+                                           entries[package_name][vuln_ver],
+                                           "python",
+                                           victim_file.make_package_url (package_name, vuln_ver, 1))
             # Add entry to database
 
     else:
@@ -37,7 +42,9 @@ def setup_args ():
     parser = argparse.ArgumentParser (description="Download similar python packages for vict.ims")
 
     # Only add the agrument for the name of the victims package we are looking for
-    parser.add_argument ("-n", "--name", nargs=1, required=True, help="Name of the victim package to be searched for")
+    parser.add_argument ("-n", "--name", nargs=1,
+                         required=True,
+                         help="Name of the victim package to be searched for")
     return parser.parse_args ()
 
 def main ():
