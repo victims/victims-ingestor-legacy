@@ -26,6 +26,6 @@ def get_entries (lang=None):
     vuln_list = {}
 
     for src in sources:
-        src (vuln_list)
+        vuln_list.update (src ())
 
     return vuln_list
