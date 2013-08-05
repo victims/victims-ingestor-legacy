@@ -88,8 +88,6 @@ def get_entries (output_dict):
         cache_db.create_cache (vuln_list)
         cache_db.add_mtime_stamp ()
 
-    return vuln_list
-
 
 def _get_source (url):
     '''
