@@ -14,14 +14,7 @@ import urllib2
 import nist_nvd_v1
 import nist_nvd_v2
 
-# TODO - cache the results after a run, it currently takes ages for a single run
-# - Implement threading in the library to make runs faster
-# - May be use CVE v1 files as these are much smaller? (Are they good enough?)
-
 sources = [nist_nvd_v2.get_entries]
-
-DEBUG_MODE = True # Is debug mode on?
-
 
 def get_entries (lang=None):
     '''
