@@ -40,6 +40,19 @@ vuln_list = None    # The dictionary of valid vulnerable entries currently parse
 
 DEBUG_MODE = False # Is debug mode on?
 
+CACHING = True
+cache_db = None
+
+def _cache_uptodate ():
+    """
+    Check if the cache is up to date
+    """
+    if cache_db.check_mtime_within ():
+        return True
+
+    cache_db.renew_table ()
+
+    return False
 
 def get_entries (output_dict):
     '''
@@ -55,12 +68,13 @@ def get_entries (output_dict):
 
     vuln_list = output_dict
 
-    for src in cve_sources_recent:
-        source = _get_source (src)   # Change over to victim file's download function
-        if source is None:
-            continue
-        else:
-            _parse_nvd_file (source)
+    if CACHING:
+        global cache_db
+
+        cache_db = victim_db_manager.VictimDB (table="cache_nistv2")
+
+        if _cache_uptodate ():
+            return cache_db.get_cache ()
 
     if not DEBUG_MODE: # Currently debug mode makes no real sense, fix it up
         for src in cve_sources_full:
@@ -69,6 +83,10 @@ def get_entries (output_dict):
                 continue
             else:
                 _parse_nvd_file (source)
+
+    if CACHING:
+        cache_db.create_cache (vuln_list)
+        cache_db.add_mtime_stamp ()
 
     return vuln_list
 
