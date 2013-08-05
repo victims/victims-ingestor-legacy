@@ -15,8 +15,6 @@ import xml.parsers.expat
 
 from victim_file import download_file
 
-# TODO - cache the results after a run, it currently takes ages for a single run
-
 # NIST database files
 cve_sources_recent = ["https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-modified.xml",
                       "https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-recent.xml"]
@@ -37,8 +35,6 @@ cve_sources_full = ["https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-2002.x
 cve = ""          # The current CVE ID/s being parsed
 valid = False     # Is the entry currently being processed something we want? a global because the value's needed by two functions
 vuln_list = None    # The dictionary of valid vulnerable entries currently parsed
-
-DEBUG_MODE = False # Is debug mode on?
 
 CACHING = True
 cache_db = None
@@ -66,7 +62,7 @@ def get_entries (output_dict):
 
     global vuln_list
 
-    vuln_list = output_dict
+    vuln_list = {}
 
     if CACHING:
         global cache_db
@@ -74,20 +70,21 @@ def get_entries (output_dict):
         cache_db = victim_db_manager.VictimDB (table="cache_nistv2")
 
         if _cache_uptodate ():
+            # If the cache is up to date, return the cache
             return cache_db.get_cache ()
 
-    if not DEBUG_MODE: # Currently debug mode makes no real sense, fix it up
-        for src in cve_sources_full:
-            source = _get_source (src)
-            if source is None:
-                continue
-            else:
-                _parse_nvd_file (source)
+    for src in cve_sources_full:
+        source = _get_source (src)
+        if source is None:
+            continue
+        else:
+            _parse_nvd_file (source)
 
     if CACHING:
         cache_db.create_cache (vuln_list)
         cache_db.add_mtime_stamp ()
 
+    return vuln_list
 
 def _get_source (url):
     '''
