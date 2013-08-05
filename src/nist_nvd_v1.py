@@ -17,9 +17,6 @@ import xml.parsers.expat
 from victim_file import download_file
 import victim_db_manager
 
-# TODO - cache the results after a run, it currently takes ages for a single run
-# - Implement threading in the library to make runs faster
-
 # Language agnostic databases
 cve_sources_full = ["http://nvd.nist.gov/download/nvdcve-2002.xml",
                     "http://nvd.nist.gov/download/nvdcve-2003.xml",
@@ -41,7 +38,6 @@ vuln_list = None    # The dictionary of valid vulnerable entries currently parse
 
 cache_db = None
 
-DEBUG_MODE = True # Is debug mode on?
 CACHING = True # Is caching turned on?
 
 def _cache_uptodate ():
@@ -66,7 +62,7 @@ def get_entries (output_dict):
     """
     global vuln_list
 
-    vuln_list = output_dict
+    vuln_list = {}
 
     if CACHING:
         global cache_db
@@ -74,6 +70,7 @@ def get_entries (output_dict):
         cache_db = victim_db_manager.VictimDB (table="cache_nistv1")
 
         if _cache_uptodate ():
+            # Just return the cache if it is up to date
             return cache_db.get_cache ()
 
     for src in cve_sources_full:
@@ -86,6 +83,8 @@ def get_entries (output_dict):
     if CACHING:
         cache_db.create_cache (vuln_list)
         cache_db.add_mtime_stamp ()
+
+    return vuln_list
 
 
 def _get_source (url):
