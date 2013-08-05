@@ -18,6 +18,7 @@ import os
 from datetime import datetime, timedelta
 
 mtime_fmt = "%j:%Y:%H:%M:%S"
+CTIME_FMT = "%d:%m:%Y"
 day_seconds = 86400
 
 class VictimDB:
@@ -71,12 +72,13 @@ class VictimDB:
         self.__hash_db = db
 
 
-    def add_victim (self, cve_list,
-                    vendor,
-                    package_name,
+    def add_victim (self, package_name,
                     package_version,
+                    vendor,
+                    cves,
                     package_format,
-                    state='PENDING'):
+                    package_url,
+                    state='REQUESTED'):
         """
         Adds a potential victim entry to the victims database
         """
@@ -85,15 +87,22 @@ class VictimDB:
                                     'version' : package_version}) is not None:
             return -1
         else:
-            self.__hash_table.insert ({'submitter' :
-                                       {'name' : "victims-ingestor"},
-                                       'name' : package_name,
-                                       'version' : package_version,
-                                       'vendor' : vendor,
-                                       'cves' : cve_list,
-                                       'format' : package_format,
-                                       'hash' : hash_id,
-                                       'approval' : state})
+            date = datetime.strftime (datetime.utcnow (),
+                                      CTIME_FMT)
+
+            self.__hash_table.insert ({
+                    'submitter' :
+                        {'name' : "victims-ingestor"},
+                    'name' : package_name,
+                    'version' : package_version,
+                    'vendor' : vendor,
+                    'cves' : cve_list,
+                    'format' : package_format,
+                    'source' : package_url,
+                    'approval' :
+                        {'date' : date, 'status' : state},
+                    'entry' : {}
+                    })
 
         return 0
 
@@ -147,7 +156,7 @@ class VictimDB:
         """
         Check if the cache is up to date
         """
-    #Insert a new modified timestamp in to the cache collection
+        #Insert a new modified timestamp in to the cache collection
         mtimestr = datetime.strftime (datetime.utcnow (), mtime_fmt)
         self.__hash_table.insert ({'cache_att' : True, 'mtime' : mtimestr})
 
