@@ -20,7 +20,7 @@ https://pypi.python.org/packages/source/<first-letter-of-package-name>/<package-
 
 '''
 def download_file (url):
-    ''' 
+    '''
     function to try and download the file in the given url
     '''
 

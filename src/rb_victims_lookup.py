@@ -9,7 +9,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-import argparse
+from optparse import OptionParser
 import os
 
 import sources
@@ -39,13 +39,16 @@ def find_similar_binary_by_name (package_name):
     return
 
 def setup_args ():
-    parser = argparse.ArgumentParser (description="Download similar python packages for vict.ims")
+    parser = OptionParser (description="Download similar python packages for vict.ims")
 
     # Only add the agrument for the name of the victims package we are looking for
     parser.add_argument ("-n", "--name", nargs=1,
                          required=True,
                          help="Name of the victim package to be searched for")
-    return parser.parse_args ()
+
+    (options, args) = parser.parse_args ()
+
+    return options
 
 def main ():
     args = setup_args ()
