@@ -136,11 +136,11 @@ class VictimDB:
 
         data = self.__hash_table.find ({'cache_att' : None})
         for entry in data:
-            if entry['p_name'] not in entries:
-                entries[entry['p_name']] = {}
-                entries[entry['p_name']]['vendor'] = entry['vendor']
+            if entry['name'] not in entries:
+                entries[entry['name']] = {}
+                entries[entry['name']]['vendor'] = entry['vendor']
 
-            entries[entry['p_name']][entry['p_version']] = entry['cves']
+            entries[entry['name']][entry['version']] = entry['cves']
 
         return entries
 
