@@ -14,6 +14,7 @@ import urllib2
 import xml.parsers.expat
 
 from victim_file import download_file
+import victim_db_manager
 
 # NIST database files
 cve_sources_recent = ["https://nvd.nist.gov/static/feeds/xml/cve/nvdcve-2.0-modified.xml",
