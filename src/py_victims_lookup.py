@@ -20,18 +20,26 @@ db_conn = None
 
 def find_similar_binary_by_name (package_name):
     entries = sources.get_entries ()
+    db_conn = victim_db_manager.VictimDB ()
 
     if package_name in entries:
         # do stuff
         for vuln_ver in entries[package_name].keys ():
           if victim_file.package_exists (package_name, vuln_ver, 1):
-              victim_db_manager.add_entry (package_name,
-                                           vuln_ver,
-                                           entries[package_name]['vendor'],
-                                           entries[package_name][vuln_ver],
-                                           "python",
-                                           victim_file.make_package_url (package_name, vuln_ver, 1))
-            # Add entry to database
+              db_conn.add_victim (package_name,
+                                  vuln_ver,
+                                  entries[package_name]['vendor'],
+                                  entries[package_name][vuln_ver],
+                                  "python",
+                                  victim_file.make_package_url (package_name, vuln_ver, 1))
+
+          elif victim_file.package_exists (package_name, vuln_ver, 2):
+              db_conn.add_victim (package_name,
+                                  vuln_ver,
+                                  entries[package_name]['vendor'],
+                                  entries[package_name][vuln_ver],
+                                  "python",
+                                  victim_file.make_package_url (package_name, vuln_ver, 2))
 
     else:
         print "Error : Package not found in sources"
@@ -39,25 +47,27 @@ def find_similar_binary_by_name (package_name):
     return
 
 def setup_args ():
-    parser = OptionParser (description="Download similar python packages for vict.ims")
+    parser = OptionParser ()
 
     # Only add the agrument for the name of the victims package we are looking for
-    parser.add_argument ("-n", "--name", nargs=1,
-                         required=True,
-                         help="Name of the victim package to be searched for")
+    parser.add_option ("-n", "--name",
+                       dest="name",
+                       help="Name of the victim package to be searched for")
 
     (options, args) = parser.parse_args ()
 
-    return options
+    return (options, parser)
 
 def main ():
-    args = setup_args ()
+    (options, args) = setup_args ()
 
     # Create a connection to the victims DB with default values
     db_conn = victim_db_manager.VictimDB ()
 
-    find_similar_binary_by_name (args.name)
-
+    if (options.name):
+        find_similar_binary_by_name (options.name)
+    else:
+        args.parser.print_help ()
 
 if __name__ == '__main__':
     main ()
