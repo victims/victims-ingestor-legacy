@@ -27,11 +27,9 @@ def download_file (url):
     # try and download the file given in the url, throw up an error if not possible
     try:
         ret = urllib2.urlopen (url)
-    except urllib2.HTTPError as h:
-        print h.reason
+    except urllib2.HTTPError:
         return None
-    except urllib2.URLError as u:
-        print u.reason
+    except urllib2.URLError:
         return None
 
     print "Downloaded " + url
@@ -43,13 +41,16 @@ def make_package_url (package_name, package_version, lang):
     function to generate a url based on the package name, version and language
     '''
 
-    ruby_template = "http://rubygems.org/downloads/{!s}-{!s}.gem"
-    python_template = "https://pypi.python.org/packages/source/{!s}/{!s}/{!s}-{!s}.tar.gz"
+    ruby_template = "http://rubygems.org/downloads/{0}-{1}.gem"
+    python_template_tar = "https://pypi.python.org/packages/source/{0}/{1}/{2}-{3}.tar.gz"
+    python_template_zip = "https://pypi.python.org/packages/source/{0}/{1}/{2}-{3}.zip"
 
     if lang == 0:
         return ruby_template.format (package_name, package_version)
-    else:
-        return python_template.format (package_name[0], package_name, package_name, package_version)
+    elif lang == 1:
+        return python_template_tar.format (package_name[0], package_name, package_name, package_version)
+    elif lang == 2:
+        return python_template_zip.format (package_name[0], package_name, package_name, package_version)
 
 def package_exists (package_name, package_version, lang):
     '''
