@@ -84,7 +84,7 @@ class VictimDB:
         """
 
         if self.__hash_table.find ({'name' : package_name,
-                                    'version' : package_version}) is not None:
+                                    'version' : package_version}).count ():
             return -1
         else:
             date = datetime.strftime (datetime.utcnow (),
@@ -96,7 +96,7 @@ class VictimDB:
                     'name' : package_name,
                     'version' : package_version,
                     'vendor' : vendor,
-                    'cves' : cve_list,
+                    'cves' : cves,
                     'format' : package_format,
                     'source' : package_url,
                     'approval' :
