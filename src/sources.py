@@ -17,11 +17,17 @@ import nist_nvd_v2
 sources = [nist_nvd_v2.get_entries]
 
 def get_entries (lang=None):
-    '''
-    Function parses and aggregates _all_ vulnerability information from the predefind sources,
-    if lang is specified then the information from vulnerability databases for that particular
-    lang are also parsed and added on to the list of vulnerable packages
-    '''
+    """
+    Function parses and aggregates _all_ vulnerability information
+    from the predefind sources, if lang is specified then the
+    information from vulnerability databases for that particular
+    lang are also parsed and added on to the list of vulnerable
+    packages.
+
+    Inputs :
+    lang - a language specified so the list of sources can be
+    narrowed down to only ones relevant to the specified languages.
+    """
 
     vuln_list = {}
 

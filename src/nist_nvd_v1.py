@@ -17,7 +17,7 @@ import xml.parsers.expat
 from victim_file import download_file
 import victim_db_manager
 
-# Language agnostic databases
+# NIST v1 file links
 cve_sources_full = ["http://nvd.nist.gov/download/nvdcve-2002.xml",
                     "http://nvd.nist.gov/download/nvdcve-2003.xml",
                     "http://nvd.nist.gov/download/nvdcve-2004.xml",
@@ -31,18 +31,34 @@ cve_sources_full = ["http://nvd.nist.gov/download/nvdcve-2002.xml",
                     "http://nvd.nist.gov/download/nvdcve-2012.xml",
                     "http://nvd.nist.gov/download/nvdcve-2013.xml"]
 
-cve = ""          # The current CVE ID/s being parsed
-p_name = ""         # The current package name being parsed
-valid = False     # Is the entry currently being processed something we want? a global because the value's needed by two functions
-vuln_list = None    # The dictionary of valid vulnerable entries currently parsed
+# The current CVE ID/s being parsed
+cve = ""
 
+# The current package name being parsed
+p_name = ""
+
+'''
+Is the entry currently being processed something we want?
+A global because the value's needed by two functions.
+'''
+valid = False
+
+# The dictionary of valid vulnerable entries currently parsed
+vuln_list = None
+
+# Reference to the VictimDB object in use
 cache_db = None
 
-CACHING = True # Is caching turned on?
+# Is caching turned on?
+CACHING = True
 
 def _cache_uptodate ():
     """
-    Check if the cache is up to date
+    Check if the cache is up to date.
+
+    Outputs :
+    Returns True if the cache is within date.
+    Returns False if the cache needs to be rebuilt.
     """
     if cache_db.check_mtime_within ():
         return True
@@ -53,12 +69,14 @@ def _cache_uptodate ():
 
 def get_entries ():
     """
-    Function parses and aggregates _all_ vulnerability information from the predefind sources
+    Function parses and aggregates _all_ vulnerability
+    information from the predefind sources.
 
-    output is a dictionary of the following format:
+    Outputs :
+    Returns a dictionary of the following format:
     dict[package_name] - returns a dictionary(dict2) of the format
-    dict2[version] which gives a list of CVEs affecting the given version
-    dict2[vendor] returns the vendor for the given package_name
+    dict2[version] - list of CVEs affecting the given version
+    dict2[vendor] - returns the vendor for the given package_name.
     """
     global vuln_list
 
@@ -67,6 +85,7 @@ def get_entries ():
     if CACHING:
         global cache_db
 
+        # Get a reference to the database where the cache is stored
         cache_db = victim_db_manager.VictimDB (table="cache_nistv1")
 
         if _cache_uptodate ():
@@ -89,7 +108,14 @@ def get_entries ():
 
 def _get_source (url):
     """
-    Function that tries to download a file from the given url
+    Function that tries to download a file from the given url.
+
+    Inputs :
+    url - URL of file to download.
+
+    Outputs :
+    Returns None if the file can be downloaded.
+    Returns the reference to the downloaded file.
     """
 
     try:
@@ -101,14 +127,18 @@ def _get_source (url):
         print u.reason
         return None
 
-    print "Downloaded " + url    # Just for debugging, have we really downloaded the file?
-
     return ret
 
 
 def _parse_helper_nvd (name, attr):
     """
-    Function that checks if data currently being processed is what we're looking for
+    Helper function that checks if data currently being processed
+    is what we're looking for, if it is then the data is added
+    to the global dictionary.
+
+    Inputs :
+    name - name of the tag being parsed.
+    attr - the contents of the tag being parsed.
     """
     global valid
     global cve
@@ -140,7 +170,11 @@ def _parse_helper_nvd (name, attr):
 
 def _parse_nvd_file (input_file):
     """
-    Function to parse the data in the nvd file to find the appropriate cve entries and the program name and version
+    Function to parse the data in the nvd file to find the
+    appropriate cve entries and the program name and version.
+
+    Inputs :
+    input_file - File object to be parsed.
     """
     nvd_parser = xml.parsers.expat.ParserCreate ()
     nvd_parser.StartElementHandler = _parse_helper_nvd

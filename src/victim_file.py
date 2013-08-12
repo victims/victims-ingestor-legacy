@@ -18,13 +18,25 @@ http://rubygems.org/downloads/<package-name>-<package-version>.gem - ruby downlo
 
 https://pypi.python.org/packages/source/<first-letter-of-package-name>/<package-name>/<package-name>-<package-version>.tar.gz - python download url template
 
+https://pypi.python.org/packages/source/<first-letter-of-package-name>/<package-name>/<package-name>-<package-version>.zip - python download url template
+
 '''
 def download_file (url):
-    '''
-    function to try and download the file in the given url
-    '''
+    """
+    Function to try and download the file in the given url.
 
-    # try and download the file given in the url, throw up an error if not possible
+    Inputs :
+    url - URL of the file to be downloaded
+
+    Outputs :
+    Returns a reference to the downloaded file
+    Returns None on failure
+    """
+
+    '''
+    Try and download the file given in the url,
+    throw up an error if not possible.
+    '''
     try:
         ret = urllib2.urlopen (url)
     except urllib2.HTTPError:
@@ -37,9 +49,18 @@ def download_file (url):
     return ret
 
 def make_package_url (package_name, package_version, lang):
-    '''
-    function to generate a url based on the package name, version and language
-    '''
+    """
+    Function to generate a url based on the package name,
+    version and language.
+
+    Inputs :
+    package_name - name of the package to be downloaded
+    package_version - version of the package to be downloaded
+    lang - language of the package being downloaded
+
+    Outputs :
+    Returns a string containing the URL of the package
+    """
 
     ruby_template = "http://rubygems.org/downloads/{0}-{1}.gem"
     python_template_tar = "https://pypi.python.org/packages/source/{0}/{1}/{2}-{3}.tar.gz"
@@ -53,9 +74,19 @@ def make_package_url (package_name, package_version, lang):
         return python_template_zip.format (package_name[0], package_name, package_name, package_version)
 
 def package_exists (package_name, package_version, lang):
-    '''
-    a function linking the required functions to download a required package
-    '''
+    """
+    A function linking the required functions to check
+    for the existence of a package
+
+    Inputs :
+    package_name - name of the package to be downloaded
+    package_version - version of the package to be downloaded
+    lang - language of the package being downloaded
+
+    Outputs :
+    Returns True on package availability
+    Returns False on package unavailability
+    """
 
     url = make_package_url (package_name, package_version, lang)
     victim_file = download_file (url)
