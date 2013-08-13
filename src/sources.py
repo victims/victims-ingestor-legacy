@@ -16,6 +16,15 @@ import nist_nvd_v2
 
 sources = [nist_nvd_v2.get_entries]
 
+'''
+NOTE :
+When writing a new sources plugin, please ensure that it
+returns a dictionary of the following format:
+dict[package_name] - returns a dictionary(dict2) of the format
+dict2[version] - list of CVEs affecting the given version
+dict2[vendor] - returns the vendor for the given package_name.
+'''
+
 def get_entries (lang=None):
     """
     Function parses and aggregates _all_ vulnerability information
