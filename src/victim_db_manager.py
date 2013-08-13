@@ -185,6 +185,10 @@ class VictimDB:
     def get_cache (self):
         """
         Returns the cache from the connected DB.
+
+        Outputs :
+        Returns a dictionary containing victim entries
+        conforming to the format specified in sources.py.
         """
         entries = {}
 
