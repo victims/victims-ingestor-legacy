@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 mtime_fmt = "%j:%Y:%H:%M:%S"
 CTIME_FMT = "%d:%m:%Y"
 day_seconds = 86400
+VICTIM_HASHES = "hashes"
 
 class VictimDB:
     """
@@ -29,11 +30,13 @@ class VictimDB:
     __hash_table = None # Reference to the table in use
     __hash_table_name = None # Name of the table in use
     __hash_db = None # Reference to the DB in use
+    __victim_table = None # Reference to the victim hashes table
 
     def __init__ (self, db_name='victims',
                   host=os.getenv ("OPENSHIFT_MONGODB_DB_HOST"),
                   port=int (os.getenv ("OPENSHIFT_MONGODB_DB_PORT")),
-                  table='submissions'):
+                  table='submissions',
+                  victim_conn=False):
 
         try:
             '''
@@ -65,7 +68,14 @@ class VictimDB:
 
         self.__hash_table = pymongo.collection.Collection (db, table)
 
-        # Save the table name and DB reference in case the table needs to be renewed
+        if victim_conn:
+            self.__victim_table = pymongo.collection.Collection (db,
+                                                                 VICTIM_HASHES)
+
+        '''
+        Save the table name and DB reference in case
+        the table needs to be renewed.
+        '''
         self.__hash_table_name = table
         self.__hash_db = db
 
@@ -90,13 +100,18 @@ class VictimDB:
         state - the state of the victim entry
 
         Outputs :
-        Returns 0 on success
-        Returns -1 on failure
+        Returns True on success
+        Returns False on failure
         """
 
         if self.__hash_table.find ({'name' : package_name,
                                     'version' : package_version}).count ():
-            return -1
+            return False
+
+        elif self.__victim_table.find ({'name' : package_name,
+                                        'version' : package_version}).count ():
+            return False
+
         else:
             date = datetime.strftime (datetime.utcnow (),
                                       CTIME_FMT)
@@ -115,7 +130,7 @@ class VictimDB:
                     'entry' : {}
                     })
 
-        return 0
+        return True
 
     def get_victim_entry (self, package_name, package_version):
         """
