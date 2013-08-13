@@ -30,8 +30,11 @@ def find_similar_binary_by_name (package_name):
     """
     entries = sources.get_entries ()
 
-    # Create a connection to the victims DB with default values
-    db_conn = victim_db_manager.VictimDB ()
+    '''
+    Create a connection to the victims DB with
+    a connection to the hashes collection.
+    '''
+    db_conn = victim_db_manager.VictimDB (victim_conn=True)
 
     if package_name in entries:
         for vuln_ver in entries[package_name].keys ():
