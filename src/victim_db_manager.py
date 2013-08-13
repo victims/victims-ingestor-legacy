@@ -17,9 +17,10 @@ import pymongo
 import os
 from datetime import datetime, timedelta
 
-mtime_fmt = "%j:%Y:%H:%M:%S"
+MTIME_FMT = "%j:%Y:%H:%M:%S"
 CTIME_FMT = "%d:%m:%Y"
-day_seconds = 86400
+# The seconds in a day
+DAY_SECONDS = 86400
 VICTIM_HASHES = "hashes"
 
 class VictimDB:
@@ -211,10 +212,10 @@ class VictimDB:
         """
 
         #Insert a new modified timestamp in to the cache collection
-        mtimestr = datetime.strftime (datetime.utcnow (), mtime_fmt)
+        mtimestr = datetime.strftime (datetime.utcnow (), MTIME_FMT)
         self.__hash_table.insert ({'cache_att' : True, 'mtime' : mtimestr})
 
-    def check_mtime_within (self, d_seconds=day_seconds):
+    def check_mtime_within (self, d_seconds=DAY_SECONDS):
         """
         Check if the cache is up to date.
 
@@ -228,7 +229,7 @@ class VictimDB:
 
         if self.__hash_table.find_one ({'cache_att' : True}):
             mtimestr = self.__hash_table.find_one ({'cache_att' : True})['mtime']
-            mtime = datetime.strptime (mtimestr, mtime_fmt)
+            mtime = datetime.strptime (mtimestr, MTIME_FMT)
 
             if mtime >= (datetime.utcnow () - timedelta (seconds=d_seconds)):
                 return True
