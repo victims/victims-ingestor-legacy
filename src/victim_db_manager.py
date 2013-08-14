@@ -109,27 +109,28 @@ class VictimDB:
                                     'version' : package_version}).count ():
             return False
 
-        elif self.__victim_table.find ({'name' : package_name,
-                                        'version' : package_version}).count ():
-            return False
+        elif self.__victim_table:
+            if self.__victim_table.find ({'name' : package_name,
+                                          'version' : package_version}).count ():
+                return False
 
-        else:
-            date = datetime.strftime (datetime.utcnow (),
-                                      CTIME_FMT)
 
-            self.__hash_table.insert ({
-                    'submitter' :
-                        {'name' : "victims-ingestor"},
-                    'name' : package_name,
-                    'version' : package_version,
-                    'vendor' : vendor,
-                    'cves' : cves,
-                    'format' : package_format,
-                    'source' : package_url,
-                    'approval' :
-                        {'date' : date, 'status' : state},
-                    'entry' : {}
-                    })
+        date = datetime.strftime (datetime.utcnow (),
+                                  CTIME_FMT)
+
+        self.__hash_table.insert ({
+                'submitter' :
+                    {'name' : "victims-ingestor"},
+                'name' : package_name,
+                'version' : package_version,
+                'vendor' : vendor,
+                'cves' : cves,
+                'format' : package_format,
+                'source' : package_url,
+                'approval' :
+                    {'date' : date, 'status' : state},
+                'entry' : {}
+                })
 
         return True
 
